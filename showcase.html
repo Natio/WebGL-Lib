@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Showcase</title>
+  <script type="text/javascript"  src="jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="basic-objects.js"></script>
+  <script type="text/javascript" src="webgl-obj-loader.js"></script>
+  <script type="text/javascript" src="tools.js"></script>
+  <script type="text/javascript" src="textures.js"></script>
+  <script type="text/javascript" src="gl-matrix.js"></script>
+  <script type="text/javascript" src="model.js"></script>
+  <script type="text/javascript" src="animator.js"></script>
+
+  <script type="text/javascript">
+  var tools;
+  $(document).ready(function(){
+
+    var canvas = document.getElementById("glcanvas");
+    var gl_context =canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+
+    tools = new CTTools(gl_context);
+
+    tools.readyForUse(function(){
+	      main();
+    });
+
+  });
+
+  function main(){
+
+    var animator = new CTAnimator(tools);
+
+    var sun = tools.createLight("directional");
+    sun.direction = [15.0,5.0,5.0];
+    sun.color = [0.6,0.6,0.6,1.0];
+
+    /* Add a colored and scaled cube to the scene*/
+    var cube  = new CTObject(tools.shapes.cube);
+    cube.color = [1.0, 0.0, 0.0,1.0];
+    cube.scale = [2.0,2.0,2.0];
+    cube.axisRotation = [0.0, Math.PI/4, 0.0];
+    tools.scene.addObject(cube);
+    /**/
+
+    /* Add a sphere to the scene*/
+
+    var sphere  = new CTObject(tools.shapes.sphere);
+    sphere.color = [0.0, 0.0, 1.0,1.0];
+    sphere.translate = [4.0,0.0,0.0];
+    tools.scene.addObject(sphere);
+
+
+    /* Add a child to sphere*/
+
+    var cone = new CTObject(tools.shapes.cone);
+    cone.axisRotation = [-Math.PI/2,0.0,0.0];
+    cone.translate = [0.0,1.0,0.0];
+    sphere.addChild(cone);
+
+
+    /* Trasnlate sphere and see how cone moves*/
+    sphere.translate[0] = -5;
+
+
+    /* Add a spotlight to the sphere*/
+
+    var light = tools.createLight("spot");
+    light.direction = [-1.0,0.0,0.0];
+    light.position = [-0.1,0.0,0.0];
+    sphere.addLight(light);
+
+
+
+    /* Animate the cube*/
+
+    var cube_rotation = new CTRotationAnimation(cube, [0.0, Math.PI*2,0.0], 4000, false);
+    animator.addAnimation(cube_rotation);
+
+
+    /* Run the animations forever*/
+
+    animator.removeAnimation(cube_rotation);
+    animator.addAnimation(new CTStackAnimation([cube_rotation], true));
+    var s_rotation = new CTRotationAnimation(sphere, [0.0,-Math.PI*2, 0.0], 4000, false);
+    animator.addAnimation(new CTStackAnimation([s_rotation], true));
+
+
+    /* Other animations!!!!!!*/
+
+    var c_scale_down = new CTScaleAnimation(cube,[-1.0, -1.0, -1.0], 3000, false);
+    var c_scale_up = new CTScaleAnimation(cube,[1.0, 1.0, 1.0], 3000, false);
+    var c_color_to = new CTColorAnimation(cube,[0.0,1.0,0.0,1.0],3000);
+    var c_color_from = new  CTColorAnimation(cube,[1.0,0.0,0.0,1.0],1000);
+
+    var first_group = new CTGroupAnimation([c_scale_down, c_color_to], false);
+    var second_group = new CTGroupAnimation([c_scale_up, c_color_from], false);
+
+    animator.addAnimation(new CTStackAnimation([first_group, second_group], true));
+
+    cube.translate[1] = -1;
+    var c_trans_up = new CTTranslationAnimation(cube,[0.0,2.0,0.0],2000);
+    var c_trans_down = new CTTranslationAnimation(cube,[0.0,-2.0,0.0],2000);
+    animator.addAnimation(new CTStackAnimation([c_trans_up, c_trans_down],true));
+
+    var sphere_rotation = new CTRotationAnimation(sphere, [Math.PI*2, 0.0,0.0], 4000, true);
+    animator.addAnimation(new CTStackAnimation([sphere_rotation],true));
+
+    var sun_animation_go = new CTDirectionAnimation(sun, [-30.0,0.0,0.0], 8000);
+    var sun_animation_back = new CTDirectionAnimation(sun, [30.0,0.0,0.0], 8000);
+    animator.addAnimation(new CTStackAnimation([sun_animation_go, sun_animation_back], true));
+
+
+    //animator.startAnimation();
+    animator.debugAnimation(38,200);
+  }
+
+  </script>
+
+</head>
+<body style="background-color:#DDD">
+
+
+
+  <p id="message" style="font-weight:bold"></p>
+
+  <p>
+  </p>
+
+
+  <div>
+
+    <canvas width=800 height=800 id="glcanvas" style="width:800px ;background-color:blue; margin-left: auto; margin-right: auto; display:inline-block;"></canvas>
+
+  </div>
+
+</body>
+</html>

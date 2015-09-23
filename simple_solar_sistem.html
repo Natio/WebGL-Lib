@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Solar System</title>
+  <script type="text/javascript" src="jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="basic-objects.js"></script>
+  <script type="text/javascript" src="webgl-obj-loader.js"></script>
+  <script type="text/javascript" src="tools.js"></script>
+  <script type="text/javascript" src="textures.js"></script>
+  <script type="text/javascript" src="gl-matrix.js"></script>
+  <script type="text/javascript" src="model.js"></script>
+  <script type="text/javascript" src="animator.js"></script>
+
+  <script type="text/javascript">
+  var tools;
+  $(document).ready(function(){
+
+    var canvas = document.getElementById("glcanvas");
+    var gl_context =canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    tools = new CTTools(gl_context);
+    tools.readyForUse(function(){
+      tools.loadShapeFromOBJFile("asteroid", "models/asteroid20k.obj", function(shape){
+        tools.createTexture("textures/mars.png", "mars", function(name){
+          
+          main();
+
+        });
+
+      });
+    });
+
+  });
+
+  function main(){
+
+    var animator = new CTAnimator(tools);
+
+    var sun = tools.createLight("directional");
+    sun.direction = [0.0,0.0,5.0];
+    sun.color = [0.6,0.6,0.6,1.0];
+
+    var background = new CTObject(tools.shapes.cube);
+    background.color = [1.0, 1.0, 1.0, 1.0];
+    background.translate = [0.0, 0.0, -60.0];
+    background.scale = [100,100,0.1];
+    tools.scene.addObject(background);
+
+    for(var i = 0; i < 9; i++){
+      var object = new CTObject(tools.shapes.sphere);
+      object.translate[1] = i*2;
+      object.translate[2] = -30;
+      var scale = rand(0.2, 0.9);
+      object.color = [Math.random(),Math.random(),Math.random(), 1.0];
+      object.totalScale = [scale, scale, scale];
+      tools.scene.addObject(object);
+
+      if(i == 5){
+
+        var asteroid = new CTObject(tools.shapes.asteroid);
+        asteroid.color = [1.0,1.0,1.0,1.0];
+        asteroid.translate=[4.7,-2.9,-0.7];
+
+        var ast_scale = rand(0.4, 0.7);
+        asteroid.scale = [ast_scale, ast_scale, ast_scale];
+        object.addChild(asteroid);
+
+        var rotation_ast = new CTRotationAnimation(asteroid, [0.0,0.0,Math.PI*2], 8000 * rand(0.2, 0.9), false);
+        animator.addAnimation(new CTStackAnimation([rotation_ast], true));
+      }
+
+        //object.textureName = "mars";
+
+
+
+      var rotation = new CTRotationAnimation(object, [0.0,0.0,Math.PI*2], 10000 * rand(0.4, 0.9), false);
+      animator.addAnimation(new CTStackAnimation([rotation], true));
+    }
+
+
+
+
+
+
+
+
+    animator.startAnimation();
+    //animator.debugAnimation(38,200);
+  }
+
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+  </script>
+
+</head>
+<body style="background-color:#DDD">
+
+
+
+  <p id="message" style="font-weight:bold"></p>
+
+  <p>
+  </p>
+
+
+  <div>
+
+    <canvas width=800 height=800 id="glcanvas" style="width:800px ;background-color:blue; margin-left: auto; margin-right: auto; display:inline-block;"></canvas>
+
+  </div>
+
+</body>
+</html>
